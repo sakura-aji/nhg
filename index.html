@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>NHG At Home — End-to-End Module Flows</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#0b1020; --panel:#101733; --ink:#e9edff; --muted:#9aa3c7;
+    --accent:#6aa8ff; --accent2:#7af0c0; --warn:#ffb86b; --bad:#ff7a90;
+    --good:#7af0c0; --line:#2a335f; --chip:#1b234a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;line-height:1.55}
+  header{padding:32px 28px 12px;border-bottom:1px solid var(--line);position:sticky;top:0;background:linear-gradient(180deg,#0b1020 80%,rgba(11,16,32,.8));z-index:10}
+  header h1{margin:0 0 6px;font-size:22px;letter-spacing:.2px}
+  header p{margin:0;color:var(--muted);font-size:13px}
+  nav{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+  nav a{font-size:12px;padding:6px 10px;border-radius:999px;background:var(--chip);color:var(--ink);text-decoration:none;border:1px solid var(--line)}
+  nav a:hover{background:#222a55}
+  main{max-width:1200px;margin:0 auto;padding:24px 24px 80px}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 22px 12px;margin:22px 0}
+  section h2{margin:0 0 4px;font-size:18px;color:var(--ink)}
+  section h2 .num{color:var(--accent);font-weight:600;margin-right:8px}
+  section .meta{font-size:12px;color:var(--muted);margin-bottom:14px}
+  .actors{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 16px}
+  .chip{font-size:11px;padding:3px 8px;border-radius:999px;background:var(--chip);border:1px solid var(--line);color:var(--muted)}
+  .chip.web{color:#bcd4ff}
+  .chip.ipad{color:#9cf0d6}
+  .chip.wa{color:#7af0c0}
+  .chip.sys{color:#ffb86b}
+  .chip.nok{color:#ff7a90}
+  details{margin:10px 0;background:#0d1430;border:1px solid var(--line);border-radius:10px}
+  details > summary{cursor:pointer;padding:10px 14px;font-weight:600;font-size:13px;color:var(--ink);user-select:none}
+  details[open] > summary{border-bottom:1px solid var(--line)}
+  details .body{padding:14px 14px 6px}
+  .ref{font-size:12px;color:var(--muted);margin:6px 0 14px}
+  .ref a{color:var(--accent);text-decoration:none}
+  .ref a:hover{text-decoration:underline}
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+  .legend span{font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid var(--line)}
+  .legend .l-done{color:#7af0c0}
+  .legend .l-dev{color:#bcd4ff}
+  .legend .l-todo{color:#ffb86b}
+  .legend .l-bug{color:#ff7a90}
+  .mermaid{background:#0d1430;border-radius:8px;padding:14px;overflow-x:auto}
+  .deep{border-left:3px solid var(--accent);}
+  footer{color:var(--muted);font-size:12px;text-align:center;padding:30px 0 50px}
+  code{background:#1b234a;padding:1px 6px;border-radius:4px;font-size:12px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>NHG At Home — End-to-End Module Flows</h1>
+  <p>Mixed-depth flowcharts covering Clinician (Web), Patient (iPad), Patient (WhatsApp), and Admin/NOK/System actors. Sourced from <em>Part 3: Scope of Work and Requirements</em> + the NHG To-Do List. Deep dives marked on Scheduling, Medication, and Alerts.</p>
+  <nav>
+    <a href="#legend">Legend</a>
+    <a href="#m-overview">0. System Overview</a>
+    <a href="#m-onboarding-patient">1. Patient Onboarding</a>
+    <a href="#m-onboarding-clinician">2. Clinician Onboarding</a>
+    <a href="#m-dashboard">3. Dashboard</a>
+    <a href="#m-vitals">4. Vitals & Patient Monitoring</a>
+    <a href="#m-thresholds">5. Thresholds</a>
+    <a href="#m-alerts">6. Alerts (deep)</a>
+    <a href="#m-medication">7. Medication (deep)</a>
+    <a href="#m-comms">8. Communication & Teleconsult</a>
+    <a href="#m-scheduling">9. Scheduling (deep)</a>
+    <a href="#m-documents">10. Document Mgmt</a>
+    <a href="#m-ipad">11. Patient iPad</a>
+    <a href="#m-reports">12. Reporting</a>
+  </nav>
+</header>
+
+<main>
+
+<section id="legend">
+  <h2><span class="num">§</span>Legend</h2>
+  <div class="legend">
+    <span class="l-done">● Done</span>
+    <span class="l-dev">● Dev Done (UI/QA)</span>
+    <span class="l-todo">● To Do</span>
+    <span class="l-bug">● Bug / UI Improve</span>
+  </div>
+  <p class="ref" style="margin-top:10px">
+    Actors: <span class="chip web">Clinician (Web)</span>
+    <span class="chip ipad">Patient (iPad)</span>
+    <span class="chip wa">Patient (WhatsApp)</span>
+    <span class="chip nok">NOK</span>
+    <span class="chip sys">System</span>
+  </p>
+</section>
+
+<!-- =================== OVERVIEW =================== -->
+<section id="m-overview">
+  <h2><span class="num">0.</span>System Overview — All actors, all modules</h2>
+  <div class="meta">High-level map of how every actor reaches every module. Use this as the index. Each module section below drills further.</div>
+  <div class="mermaid">
+flowchart LR
+  classDef web fill:#1c2a55,stroke:#6aa8ff,color:#e9edff;
+  classDef ipad fill:#16382d,stroke:#7af0c0,color:#e9edff;
+  classDef wa fill:#1f3530,stroke:#7af0c0,color:#e9edff;
+  classDef sys fill:#3a2a14,stroke:#ffb86b,color:#e9edff;
+  classDef mod fill:#101733,stroke:#9aa3c7,color:#e9edff;
+
+  C[Clinician / Nurse]:::web
+  A[Super Admin]:::web
+  P_ipad[Patient on iPad]:::ipad
+  P_wa[Patient on WhatsApp]:::wa
+  N[Next-of-Kin]:::wa
+  SYS[Backend / Middleware]:::sys
+  DEV[VSM Devices: BP, SPO2, Temp, Glucose, Weight, ECG]:::sys
+
+  M_DASH[Dashboard]:::mod
+  M_PT[Patient Page]:::mod
+  M_VIT[Vitals & Monitoring]:::mod
+  M_THR[Thresholds]:::mod
+  M_ALR[Alerts & Escalation]:::mod
+  M_MED[Medication]:::mod
+  M_MSG[Comms / Teams]:::mod
+  M_SCH[Scheduling]:::mod
+  M_DOC[Documents]:::mod
+  M_RPT[Reports]:::mod
+  M_ONB[Onboarding]:::mod
+
+  A --> M_THR
+  A --> M_ONB
+  C --> M_DASH --> M_PT
+  C --> M_ALR
+  C --> M_MED
+  C --> M_MSG
+  C --> M_SCH
+  C --> M_DOC
+  C --> M_RPT
+  C --> M_ONB
+
+  P_ipad --> M_VIT
+  P_ipad --> M_MED
+  P_ipad --> M_MSG
+  P_ipad --> M_SCH
+
+  P_wa --> M_VIT
+  P_wa --> M_MED
+  P_wa --> M_MSG
+
+  N --> M_ALR
+  N --> M_VIT
+
+  DEV --> SYS --> M_VIT
+  SYS --> M_ALR
+  SYS --> M_RPT
+  </div>
+</section>
+
+<!-- =================== PATIENT ONBOARDING =================== -->
+<section id="m-onboarding-patient">
+  <h2><span class="num">1.</span>Patient Onboarding</h2>
+  <div class="actors">
+    <span class="chip web">Clinician (Web)</span><span class="chip ipad">Patient (iPad)</span><span class="chip sys">System</span>
+  </div>
+  <div class="ref">
+    Scope §4.6 · §4.5.2 · §4.1.10 · §4.1.11 ·
+    <a target="_blank" href="https://nhgathome.com/users/create">/users/create</a> ·
+    Status: Most fields <span class="l-done">Done</span>; bulk nurse upload <span class="l-dev">Dev Done</span>.
+  </div>
+  <div class="mermaid">
+flowchart TD
+  classDef web fill:#1c2a55,stroke:#6aa8ff,color:#e9edff;
+  classDef ipad fill:#16382d,stroke:#7af0c0,color:#e9edff;
+  classDef sys fill:#3a2a14,stroke:#ffb86b,color:#e9edff;
+  classDef decision fill:#0d1430,stroke:#9aa3c7,color:#e9edff;
+
+  S[Start: Patient enrolled in MIC@Home]:::web
+  S --> F1[Open Patient Registration form\n/users/create]:::web
+  F1 --> F2[Fill: Name, DOB, Bed#, Mobile,\nInstitution TTSH/KTPH/WH]:::web
+  F2 --> F3[Add NOK 1 + NOK 2 contacts]:::web
+  F3 --> F4[Assign default Care Team\nadjustable per patient]:::web
+  F4 --> HV{Home visit needed?}:::decision
+  HV -- No --> F5[Set Reading Frequency\n8am / 1pm / 6pm]:::web
+  HV -- Yes --> HV1[Show home-visit fields:\nfrequency · address · notes]:::web
+  HV1 --> HV2{Fixed nurse?}:::decision
+  HV2 -- Yes --> HV3[Pick from list of nurses\nflagged 'Does home visits'\n→ LOCKED to this patient]:::web
+  HV2 -- No --> HV4[Leave open → Admin\nrostering will assign per day]:::web
+  HV3 --> F5
+  HV4 --> F5
+  F5 --> F6[Select Language: EN / CN / MY]:::web
+  F6 --> F7{Patient kit type?}:::decision
+  F7 -- Kit --> K1[Provision iPad + VSM devices]:::sys
+  F7 -- Non-kit --> NK1[Setup WhatsApp manual\nsubmission link]:::sys
+  K1 --> O1[Toggle on default onboarding docs:\ninfo sheet, charges, advisory,\ncaregiving video, brochures]:::web
+  NK1 --> O1
+  O1 --> O2[Save patient → push to system]:::sys
+  O2 --> O3[Auto-send Welcome WhatsApp\n+ submission link toggle ON]:::sys
+  O3 --> P1[iPad: Patient sees onboarding\nmaterials on first launch]:::ipad
+  P1 --> P2[Patient sees vital schedule\n+ guided/kiosk mode]:::ipad
+  P2 --> END[Onboarded ✅]:::sys
+  </div>
+</section>
+
+<!-- =================== CLINICIAN ONBOARDING =================== -->
+<section id="m-onboarding-clinician">
+  <h2><span class="num">2.</span>Clinician Onboarding</h2>
+  <div class="actors">
+    <span class="chip web">Super Admin (Web)</span>
+  </div>
+  <div class="ref">
+    Scope §4.1.10 ·
+    <a target="_blank" href="https://nhgathome.com/admin/doctors">/admin/doctors</a> ·
+    Status: single registration <span class="l-done">Done</span>; bulk Excel <span class="l-dev">Dev Done</span>.
+  </div>
+  <div class="mermaid">
+flowchart LR
+  classDef web fill:#1c2a55,stroke:#6aa8ff,color:#e9edff;
+  classDef sys fill:#3a2a14,stroke:#ffb86b,color:#e9edff;
+  classDef decision fill:#0d1430,stroke:#9aa3c7,color:#e9edff;
+
+  A[Admin → /admin/doctors]:::web --> B{Mode?}:::decision
+  B -- Single --> C1[Fill nurse form: name,\nrole, institution, contact]:::web
+  B -- Bulk --> C2[Upload CSV/Excel template]:::web
+  C2 --> C2a[System validates rows\n→ flag duplicates / errors]:::sys
+  C1 --> HV[Toggle: 'Does home visits?'\nrequired field]:::web
+  C2a --> HV
+  HV --> HV2{Yes?}:::decision
+  HV2 -- Yes --> HV3[Capture: home-visit zones,\nweekly availability, vehicle]:::web
+  HV2 -- No --> D[Assign default patients\n+ care-team membership]:::web
+  HV3 --> D
+  D --> E[Send invite email\n+ initial password]:::sys
+  E --> F[Nurse logs in → eligible for\nrostering if flag = Yes]:::sys
+  </div>
+</section>
+
+<!-- =================== DASHBOARD =================== -->
+<section id="m-dashboard">
+  <h2><span class="num">3.</span>Dashboard</h2>
+  <div class="actors"><span class="chip web">Clinician (Web)</span></div>
+  <div class="ref">
+    Scope §4.1 · To-do: <a target="_blank" href="https://nhgathome.com/latestalerts">/latestalerts</a> · Quick cards <span class="l-dev">Dev Done</span>; pop-up alerts <span class="l-bug">Bug — fix spam submit</span>.
+  </div>
+  <div class="mermaid">
+flowchart TD
+  classDef web fill:#1c2a55,stroke:#6aa8ff,color:#e9edff;
+  classDef sys fill:#3a2a14,stroke:#ffb86b,color:#e9edff;
+  classDef decision fill:#0d1430,stroke:#9aa3c7,color:#e9edff;
+
+  L[Login]:::web --> H[Dashboard home]:::web
+  H --> Q1[Quick cards:\nactive patients · unread alerts ·\nsubmission rate · upcoming teleconsults]:::web
+  H --> Q2[Latest readings table\n auto-synced from devices]:::web
+  H --> Q3[Today's calendar\n home visits · vitals · meds · calls]:::web
+  H --> Q4[Care-team management page]:::web
+  H -.real-time.-> POP{New / abnormal\nvital arrives?}:::decision
+  POP -- Yes --> AL[Pop-up alert\n requires acknowledgement]:::web
+  AL --> AC[Care team ACK → cleared\n + audit trail logged]:::sys
+  Q2 --> PT[Click row → Patient Page]:::web
+  Q3 --> SCH[Click event → Scheduling module]:::web
+  Q4 --> CT[Add / edit / assign nurses]:::web
+  </div>
+</section>
+
+<!-- =================== VITALS & MONITORING =================== -->
+<section id="m-vitals">
+  <h2><span class="num">4.</span>Vitals & Patient Monitoring</h2>
+  <div class="actors">
+    <span class="chip web">Clinician (Web)</span><span class="chip ipad">Patient (iPad)</span><span class="chip wa">Patient (WhatsApp)</span><span class="chip sys">Devices / System</span>
+  </div>
+  <div class="ref">
+    Scope §4.1.2–§4.1.6 · §4.3 · §4.5.5 ·
+    Patient Page: <a target="_blank" href="https://nhgathome.com/devices">/devices</a> ·
+    Mandatory params: BP, HR, Temp, SPO2, Pain. Optional: Weight, CBG, ECG, Ultrasound, IO chart, Bowel, Postural BP.
+  </div>
+  <div class="mermaid">
+flowchart TD
+  classDef web fill:#1c2a55,stroke:#6aa8ff,color:#e9edff;
+  classDef ipad fill:#16382d,stroke:#7af0c0,color:#e9edff;
+  classDef wa fill:#1f3530,stroke:#7af0c0,color:#e9edff;
+  classDef sys fill:#3a2a14,stroke:#ffb86b,color:#e9edff;
+  classDef decision fill:#0d1430,stroke:#9aa3c7,color:#e9edff;
+
+  TRG{Submission trigger}:::decision
+  SCHED[Scheduled reminder\n8am / 1pm / 6pm]:::sys --> TRG
+  ADHOC[Clinician 'Send link now'\nbutton on Patient Page]:::web --> TRG
+  TRG --> CH{Patient setup?}:::decision
+
+  CH -- Kit --> K1[Patient takes reading\non BP / SPO2 / Temp / Glucose]:::ipad
+  K1 --> K2[Device auto-syncs\nvia middleware]:::sys
+  K2 --> CAP
+
+  CH -- Non-kit --> NK1[WhatsApp link sent\n optional forward to NOK]:::wa
+  NK1 --> NK2{Submission method}:::decision
+  NK2 -- Manual entry --> NK3[Patient types values\non web form]:::wa
+  NK2 -- OCR upload --> NK4[Patient uploads photo of device\n→ OCR extracts values]:::sys
+  NK3 --> CAP
+  NK4 --> CAP
+
+  CAP[System ingests reading]:::sys --> THR{Within thresholds?}:::decision
+  THR -- Normal --> N1[Save · update trends graph\n· update submission rate]:::sys
+  THR -- Abnormal --> N2[Trigger Alerts module\n→ see §6]:::sys
+  N1 --> SHOW[Patient Page → Vital Trends\ngraph + history]:::web
+  N1 --> IPAD[iPad: 'View past readings'\nbutton → graph / list]:::ipad
+  N2 --> SHOW
+  N2 --> IPAD2[iPad: highlight abnormal\nblock close until acknowledged]:::ipad
+
+  BAT[Battery % of devices + iPad]:::sys --> SHOW
+  </div>
+</section>
+
+<!-- =================== THRESHOLDS =================== -->
+<section id="m-thresholds">
+  <h2><span class="num">5.</span>Thresholds</h2>
+  <div class="actors"><span class="chip web">Super Admin / Clinician (Web)</span></div>
+  <div class="ref">Scope §4.1.8–§4.1.9 · Status: global + per-patient <span class="l-done">Done</span>.</div>
+  <div class="mermaid">
+flowchart LR
+  classDef web fill:#1c2a55,stroke:#6aa8ff,color:#e9edff;
+  classDef sys fill:#3a2a14,stroke:#ffb86b,color:#e9edff;
+  classDef decision fill:#0d1430,stroke:#9aa3c7,color:#e9edff;
+
+  A[Super Admin]:::web --> G[Set global thresholds\nper institution\nBP/HR/Temp/SPO2/Pain]:::web
+  G --> S[(Threshold store)]:::sys
+  C[Clinician on Patient Page]:::web --> O{Override per patient?}:::decision
+  O -- Yes --> P[Edit per-patient threshold\n→ supersedes global]:::web
+  O -- No --> S
+  P --> S
+  S --> EVAL[Used by Vitals + Alerts\nat each submission]:::sys
+  </div>
+</section>
+
+<!-- =================== ALERTS (DEEP) =================== -->
+<section id="m-alerts" class="deep">
+  <h2><span class="num">6.</span>Alerts &amp; Escalation <span style="color:var(--accent2);font-size:13px">— Deep dive</span></h2>
+  <div class="actors">
+    <span class="chip web">Clinician (Web)</span><span class="chip ipad">Patient (iPad)</span><span class="chip wa">Patient (WhatsApp)</span><span class="chip nok">NOK</span><span class="chip sys">System</span>
+  </div>
+  <div class="ref">
+    Scope §4.1.7 · §4.7.2 · §4.7.3 ·
+    <a target="_blank" href="https://nhgathome.com/notification">/notification</a> ·
+    Status: scheduled + abnormal alerts <span class="l-done">Done</span>; NOK escalation + 6h no-response <span class="l-todo">To do</span>.
+  </div>
+
+  <details open><summary>6.1 Reading-time alert flow (vital submitted)</summary>
+  <div class="body">
+  <div class="mermaid">
+flowchart TD
+  classDef web fill:#1c2a55,stroke:#6aa8ff,color:#e9edff;
+  classDef ipad fill:#16382d,stroke:#7af0c0,color:#e9edff;
+  classDef wa fill:#1f3530,stroke:#7af0c0,color:#e9edff;
+  classDef nok fill:#3a1c2a,stroke:#ff7a90,color:#e9edff;
+  classDef sys fill:#3a2a14,stroke:#ffb86b,color:#e9edff;
+  classDef decision fill:#0d1430,stroke:#9aa3c7,color:#e9edff;
+
+  V[Vital submitted]:::sys --> CH{Within threshold?}:::decision
+  CH -- Yes --> NORM[Mark normal · update dashboard\n+ update trend]:::sys
+  CH -- No --> A1[Highlight abnormal on iPad\npatient must acknowledge\nor retake before closing]:::ipad
+  A1 --> A2[Notify patient via\napp + SMS + WhatsApp:\n'Reading XXX beyond threshold,\nplease retake. Call XXX']:::wa
+  A1 --> A3[Pop-up alert on Clinician dashboard\n yellow highlight + sound]:::web
+  A3 --> A4{Care team ACK\nwithin policy window?}:::decision
+  A4 -- Yes --> LOG[Audit trail: who · when · action]:::sys
+  A4 -- No --> ESC[Escalate to next member\n day-team / night-team / AOH]:::web
+  A4 -- Critical --> NOK1[Notify NOK 1 → NOK 2]:::nok
+  ESC --> LOG
+  NOK1 --> LOG
+  </div>
+  </div>
+  </details>
+
+  <details><summary>6.2 No-response escalation (6-hour silent patient)</summary>
+  <div class="body">
+  <div class="mermaid">
+flowchart LR
+  classDef sys fill:#3a2a14,stroke:#ffb86b,color:#e9edff;
+  classDef wa fill:#1f3530,stroke:#7af0c0,color:#e9edff;
+  classDef nok fill:#3a1c2a,stroke:#ff7a90,color:#e9edff;
+  classDef web fill:#1c2a55,stroke:#6aa8ff,color:#e9edff;
+  classDef decision fill:#0d1430,stroke:#9aa3c7,color:#e9edff;
+
+  R[Reminder sent at scheduled time]:::sys --> W{Submission received?}:::decision
+  W -- Yes --> OK[Done]:::sys
+  W -- No --> Re1[Re-send reminder\nWhatsApp + SMS]:::wa
+  Re1 --> W2{6h elapsed,\nstill no response?}:::decision
+  W2 -- No --> OK
+  W2 -- Yes --> Esc1[Alert care team on dashboard]:::web
+  Esc1 --> Esc2[Notify NOK 1, NOK 2]:::nok
+  Esc2 --> Esc3[Log incident · open follow-up\non patient profile]:::sys
+  </div>
+  </div>
+  </details>
+
+  <details><summary>6.3 Configurable escalation matrix (per template)</summary>
+  <div class="body">
+  <div class="mermaid">
+flowchart TD
+  classDef sys fill:#3a2a14,stroke:#ffb86b,color:#e9edff;
+  classDef web fill:#1c2a55,stroke:#6aa8ff,color:#e9edff;
+  classDef decision fill:#0d1430,stroke:#9aa3c7,color:#e9edff;
+
+  Adm[Admin → Alert templates]:::web --> T[Define stages:\nStage 1 patient · Stage 2 day-team ·\nStage 3 night-team · Stage 4 NOK]:::web
+  T --> M[Per stage: channel\nWhatsApp · SMS · App · Call ·\nmessage template + delay]:::web
+  M --> R[Save template · attach to vital type\nor patient cohort]:::sys
+  R --> RUN{Trigger event}:::decision
+  RUN --> APPLY[Run escalation matrix\nrespect quiet hours / on-call roster]:::sys
+  </div>
+  </div>
+  </details>
+</section>
+
+<!-- =================== MEDICATION (DEEP) =================== -->
+<section id="m-medication" class="deep">
+  <h2><span class="num">7.</span>Medication <span style="color:var(--accent2);font-size:13px">— Deep dive</span></h2>
+  <div class="actors">
+    <span class="chip web">Clinician (Web)</span><span class="chip ipad">Patient (iPad)</span><span class="chip wa">Patient (WhatsApp)</span><span class="chip sys">System (OCR)</span>
+  </div>
+  <div class="ref">
+    Scope §4.4 ·
+    <a target="_blank" href="https://nhgathome.com/user/drugs/...">/user/drugs/...</a> ·
+    Status: alerts + 'Taken' button <span class="l-done">Done</span>; PDF upload, extract, change-tracking, discontinued-display <span class="l-todo">To do</span>.
+  </div>
+
+  <details open><summary>7.1 Upload, extract, and display medication list</summary>
+  <div class="body">
+  <div class="mermaid">
+flowchart TD
+  classDef web fill:#1c2a55,stroke:#6aa8ff,color:#e9edff;
+  classDef sys fill:#3a2a14,stroke:#ffb86b,color:#e9edff;
+  classDef ipad fill:#16382d,stroke:#7af0c0,color:#e9edff;
+  classDef wa fill:#1f3530,stroke:#7af0c0,color:#e9edff;
+  classDef decision fill:#0d1430,stroke:#9aa3c7,color:#e9edff;
+
+  U[Clinician uploads MAR PDF]:::web --> X[OCR / parser extracts:\ndrug · dose · frequency · route · start/stop]:::sys
+  X --> Q{Existing list on file?}:::decision
+  Q -- No --> S1[Create patient med list]:::sys
+  Q -- Yes --> S2[Diff old vs new]:::sys
+  S2 --> D{Changes detected?}:::decision
+  D -- No --> END1[No change · save snapshot]:::sys
+  D -- Yes --> D1[Tag each row:\nNew · Dose Δ · Frequency Δ · Discontinued]:::sys
+  D1 --> D2[Show diff to clinician\nfor acknowledgement]:::web
+  D2 --> ACK[Clinician confirms]:::web
+  ACK --> PUSH[Push to patient surfaces]:::sys
+  S1 --> PUSH
+  PUSH --> P1[iPad: medication list\ndiscontinued shown but greyed]:::ipad
+  PUSH --> P2[WhatsApp + App alert\nper-change message template]:::wa
+  </div>
+  </div>
+  </details>
+
+  <details><summary>7.2 Patient 'Taken' acknowledgement loop</summary>
+  <div class="body">
+  <div class="mermaid">
+flowchart LR
+  classDef ipad fill:#16382d,stroke:#7af0c0,color:#e9edff;
+  classDef wa fill:#1f3530,stroke:#7af0c0,color:#e9edff;
+  classDef sys fill:#3a2a14,stroke:#ffb86b,color:#e9edff;
+  classDef web fill:#1c2a55,stroke:#6aa8ff,color:#e9edff;
+  classDef decision fill:#0d1430,stroke:#9aa3c7,color:#e9edff;
+
+  T[Schedule fires: AM / PM / ND]:::sys --> R[Reminder via WhatsApp + iPad pop-up]:::wa
+  R --> P{Patient action}:::decision
+  P -- 'Taken' on iPad --> L1[Log adherence ✅]:::sys
+  P -- 'Taken' via WhatsApp button --> L1
+  P -- No response --> R2[Re-remind after N min]:::sys
+  R2 --> P
+  R2 -. exhausted .-> ESC[Care team gets adherence alert]:::web
+  L1 --> RPT[Feed into Reports\n→ medication logs]:::sys
+  </div>
+  </div>
+  </details>
+</section>
+
+<!-- =================== COMMS / TELECONSULT =================== -->
+<section id="m-comms">
+  <h2><span class="num">8.</span>Communication &amp; Teleconsult</h2>
+  <div class="actors">
+    <span class="chip web">Clinician (Web)</span><span class="chip ipad">Patient (iPad)</span><span class="chip wa">Patient (WhatsApp)</span>
+  </div>
+  <div class="ref">
+    Scope §4.2 ·
+    <a target="_blank" href="https://nhgathome.com/users/whatsapp/message/...">WhatsApp chat</a> ·
+    <a target="_blank" href="https://nhgathome.com/meetings">/meetings</a> ·
+    Status: 2-way WA + Teams + ad-hoc <span class="l-done">Done</span>; chat UI + avatar + calendar view <span class="l-dev">Dev Done</span>.
+  </div>
+  <div class="mermaid">
+flowchart TD
+  classDef web fill:#1c2a55,stroke:#6aa8ff,color:#e9edff;
+  classDef ipad fill:#16382d,stroke:#7af0c0,color:#e9edff;
+  classDef wa fill:#1f3530,stroke:#7af0c0,color:#e9edff;
+  classDef sys fill:#3a2a14,stroke:#ffb86b,color:#e9edff;
+  classDef decision fill:#0d1430,stroke:#9aa3c7,color:#e9edff;
+
+  H[Patient enrolled]:::sys --> WM[Auto Welcome WhatsApp\n+ onboarding template]:::wa
+  WM --> CHN{Channel}:::decision
+  CHN -- Chat --> C1[Patient WhatsApp ↔ Care team dashboard\nmulti-agent · single avatar to patient]:::web
+  CHN -- Templates --> T1[Clinician picks: PM check-in,\ndischarge, return-to-hospital]:::web
+  T1 --> C1
+  C1 --> ALT[Inbound msg → dashboard alert\n(Done: avatar fix, color UI)]:::web
+
+  CHN -- Teleconsult --> TC1{Initiated by}:::decision
+  TC1 -- Care team --> S1[Schedule Teams call\n on calendar]:::web
+  TC1 -- Patient ad-hoc --> S2[iPad 'Request call'\n→ shown on dashboard table]:::ipad
+  S1 --> R1[Reminder 10 min before\npop-up + sound on iPad]:::ipad
+  R1 --> R2[Care team starts → patient pop-up\n→ join waiting room]:::ipad
+  R2 --> CALL[Microsoft Teams call]:::sys
+  CALL --> POST[Auto log: duration, attendees\n→ Teleconsult report]:::sys
+  S1 -. cancel .-> CN[Notify patient · update calendar]:::sys
+  </div>
+</section>
+
+<!-- =================== SCHEDULING (DEEP) =================== -->
+<section id="m-scheduling" class="deep">
+  <h2><span class="num">9.</span>Scheduling <span style="color:var(--accent2);font-size:13px">— Deep dive</span></h2>
+  <div class="actors">
+    <span class="chip web">Clinician (Web)</span><span class="chip ipad">Patient (iPad)</span><span class="chip sys">System</span>
+  </div>
+  <div class="ref">
+    Scope §4.9 · §4.7.1 · Status: largely <span class="l-todo">To do</span> ·
+    Includes home-visit toggle on Patient Page, fixed-nurse lock 🔒, distance-based 10-day rostering,
+    Admin per-day Confirm, post-confirm edit, nurse leave self-service with Admin replacement suggestions.
+  </div>
+
+  <details open><summary>9.1 Activity types &amp; calendar</summary>
+  <div class="body">
+  <div class="mermaid">
+flowchart LR
+  classDef web fill:#1c2a55,stroke:#6aa8ff,color:#e9edff;
+  classDef ipad fill:#16382d,stroke:#7af0c0,color:#e9edff;
+  classDef sys fill:#3a2a14,stroke:#ffb86b,color:#e9edff;
+
+  CAL[Unified Calendar]:::web
+  CAL --> A1[Vitals: 8am-2pm-8pm]:::sys
+  CAL --> A2[Medication: AM/PM/ND]:::sys
+  CAL --> A3[Home visits]:::web
+  CAL --> A4[Teleconsult]:::web
+  CAL --> A5[Surveys / education]:::sys
+  CAL --> IPAD[Mirrored on iPad\npatient calendar view]:::ipad
+  </div>
+  </div>
+  </details>
+
+  <details open><summary>9.2 Home-visit rostering — Admin creates &amp; confirms 10-day plan</summary>
+  <div class="body">
+  <div class="mermaid">
+flowchart TD
+  classDef web fill:#1c2a55,stroke:#6aa8ff,color:#e9edff;
+  classDef sys fill:#3a2a14,stroke:#ffb86b,color:#e9edff;
+  classDef decision fill:#0d1430,stroke:#9aa3c7,color:#e9edff;
+  classDef warn fill:#3a2a14,stroke:#ff7a90,color:#e9edff;
+
+  A[Admin → Rostering page]:::web --> Q1[(Pull all patients with\nHome Visit Needed = Yes)]:::sys
+  A --> Q2[(Pull all nurses with\nDoes Home Visits = Yes)]:::sys
+  Q1 --> R[Build draft 10-day roster]:::sys
+  Q2 --> R
+  R --> R1[For each patient + day:\n· If Fixed Nurse set → assign that nurse 🔒\n· Else → distance-based recommendation\n  using patient addresses + nurse zones]:::sys
+  R1 --> VIEW[10-Day calendar grid\nrows = nurses · cols = days\nshows recommended visits]:::web
+  VIEW --> EDIT{Admin edits day?}:::decision
+  EDIT -- Drag/swap visit --> CK{Patient has Fixed Nurse?}:::decision
+  CK -- Yes --> BLOCK[Block edit · show:\n'Fixed nurse from onboarding\ncannot be changed' 🔒]:::warn
+  CK -- No --> EOK[Apply edit · re-run\ndistance recommendation]:::sys
+  EOK --> VIEW
+  BLOCK --> VIEW
+  EDIT -- No edits --> CONF
+  VIEW --> CONF[Click 'Confirm Day X' button\nbelow each day]:::web
+  CONF --> SAVE[Save day as Confirmed\n· lock from auto-changes]:::sys
+  SAVE --> EM[Email each assigned nurse\nwith their day's confirmed schedule]:::sys
+  SAVE --> CAL[Schedule appears in\nnurse + patient calendars\non next login]:::sys
+  </div>
+  </div>
+  </details>
+
+  <details><summary>9.3 Admin updates a confirmed schedule</summary>
+  <div class="body">
+  <div class="mermaid">
+flowchart LR
+  classDef web fill:#1c2a55,stroke:#6aa8ff,color:#e9edff;
+  classDef sys fill:#3a2a14,stroke:#ffb86b,color:#e9edff;
+  classDef decision fill:#0d1430,stroke:#9aa3c7,color:#e9edff;
+
+  A[Admin → Rostering page]:::web --> P[Open a confirmed day]:::web
+  P --> E[Edit visit:\nreassign · reschedule · cancel]:::web
+  E --> CK{Fixed Nurse on patient?}:::decision
+  CK -- Yes --> BL[Block reassign;\nallow time change only 🔒]:::sys
+  CK -- No --> OK[Apply change]:::sys
+  BL --> SAVE
+  OK --> SAVE[Save updated day\n· version stamp]:::sys
+  SAVE --> EM2[Email update to old + new nurse\n+ patient notification]:::sys
+  SAVE --> CAL2[Refresh calendars after login]:::sys
+  </div>
+  </div>
+  </details>
+
+  <details><summary>9.4 Smart routing — distance recommendation engine</summary>
+  <div class="body">
+  <div class="mermaid">
+flowchart LR
+  classDef sys fill:#3a2a14,stroke:#ffb86b,color:#e9edff;
+  classDef web fill:#1c2a55,stroke:#6aa8ff,color:#e9edff;
+
+  IN[Inputs:\npatient addresses · nurse home base ·\nnurse zones · nurse availability ·\nfixed-nurse locks]:::sys --> ALG[Routing algorithm:\nminimise total travel time per nurse\nrespect locks first · then cluster by proximity]:::sys
+  ALG --> OUT[Output: recommended visits per nurse per day\nwith map preview + travel-time estimate]:::web
+  OUT --> AB[Admin can accept · swap · override\nbefore confirming]:::web
+  </div>
+  </div>
+  </details>
+
+  <details><summary>9.5 Patient reschedule request</summary>
+  <div class="body">
+  <div class="mermaid">
+flowchart LR
+  classDef ipad fill:#16382d,stroke:#7af0c0,color:#e9edff;
+  classDef web fill:#1c2a55,stroke:#6aa8ff,color:#e9edff;
+  classDef sys fill:#3a2a14,stroke:#ffb86b,color:#e9edff;
+  classDef decision fill:#0d1430,stroke:#9aa3c7,color:#e9edff;
+
+  V[iPad / WA link: planned visits]:::ipad --> Btn[Tap 'Request change'\nnext to visit]:::ipad
+  Btn --> Sug[Patient suggests new slot]:::ipad
+  Sug --> Q[Queued in dashboard\nReschedule requests]:::web
+  Q --> Nu[Nurse reviews → accept/reject]:::web
+  Nu --> Up{Accepted?}:::decision
+  Up -- Yes --> A1[Update calendar · re-route\n· notify patient]:::sys
+  Up -- No --> A2[Propose alternate slot\n→ back to patient]:::sys
+  A2 --> Sug
+  </div>
+  </div>
+  </details>
+
+  <details open><summary>9.6 Nurse leave — Medical / Annual Leave self-service</summary>
+  <div class="body">
+  <div class="mermaid">
+flowchart TD
+  classDef web fill:#1c2a55,stroke:#6aa8ff,color:#e9edff;
+  classDef sys fill:#3a2a14,stroke:#ffb86b,color:#e9edff;
+  classDef decision fill:#0d1430,stroke:#9aa3c7,color:#e9edff;
+  classDef warn fill:#3a2a14,stroke:#ff7a90,color:#e9edff;
+
+  N[Nurse logs in → Calendar view]:::web --> B[Click 'Medical / Annual Leave'\nbutton below a day]:::web
+  B --> CONF{Confirm leave for that day?}:::decision
+  CONF -- Cancel --> N
+  CONF -- Confirm --> ACT[System actions:\n· Remove all appointments that day\n· Mark nurse Unavailable]:::sys
+  ACT --> EM[Email Admin:\n'Nurse X took leave on Day D ·\nN visits need reassignment']:::sys
+  ACT --> NF[Notify Admin in-app on next login]:::warn
+  NF --> SUG[Show suggested replacement nurses\nbased on:\n· Does Home Visits = Yes\n· Available that day\n· Closest to patients' addresses\n· Not over capacity]:::sys
+  SUG --> A1[Admin clicks 'Reassign all'\nor manually picks per visit]:::web
+  A1 --> CK{Any patient has Fixed Nurse?}:::decision
+  CK -- Yes --> KEEP[Mark visit as 'Pending fixed nurse return'\nor escalate · do NOT auto-reassign 🔒]:::warn
+  CK -- No --> APP[Apply reassignment]:::sys
+  APP --> EM2[Email new nurses + patients\n+ refresh calendars]:::sys
+  KEEP --> EM2
+  </div>
+  </div>
+  </details>
+
+  <details><summary>9.7 Daily nurse rotation (non-home-visit duties)</summary>
+  <div class="body">
+  <div class="mermaid">
+flowchart TD
+  classDef web fill:#1c2a55,stroke:#6aa8ff,color:#e9edff;
+  classDef sys fill:#3a2a14,stroke:#ffb86b,color:#e9edff;
+  classDef decision fill:#0d1430,stroke:#9aa3c7,color:#e9edff;
+
+  R[Nurse roster\nday/night, leave, on-call]:::sys --> D{Assignment mode}:::decision
+  D -- Auto --> A[System assigns nurses to patients\nbalanced by load + proximity]:::sys
+  D -- Manual --> M[Nurse manager edits column\non main dashboard]:::web
+  A --> AP[Apply for the day\nshown on Today's calendar]:::web
+  M --> AP
+  AP --> ALR[Alerts route to that day's\nassigned nurse first]:::sys
+  </div>
+  </div>
+  </details>
+</section>
+
+<!-- =================== DOCUMENTS =================== -->
+<section id="m-documents">
+  <h2><span class="num">10.</span>Document Management</h2>
+  <div class="actors"><span class="chip web">Clinician (Web)</span><span class="chip ipad">Patient (iPad)</span></div>
+  <div class="ref">
+    Scope §4.1.11–§4.1.12 · §4.5.2 ·
+    To-do: Patient Page Documents tab — <span class="l-dev">Dev Done</span>.
+  </div>
+  <div class="mermaid">
+flowchart LR
+  classDef web fill:#1c2a55,stroke:#6aa8ff,color:#e9edff;
+  classDef ipad fill:#16382d,stroke:#7af0c0,color:#e9edff;
+  classDef sys fill:#3a2a14,stroke:#ffb86b,color:#e9edff;
+  classDef decision fill:#0d1430,stroke:#9aa3c7,color:#e9edff;
+
+  C[Clinician → Patient Page → Documents tab]:::web --> U[Upload doc:\ntype · title · file · date]:::web
+  U --> T{Toggle visible to patient?}:::decision
+  T -- On --> P[Doc appears in iPad onboarding section]:::ipad
+  T -- Off --> S[Stored only in clinical view]:::sys
+  P --> A[Patient acknowledges read\nlogged for audit]:::sys
+  </div>
+</section>
+
+<!-- =================== iPad =================== -->
+<section id="m-ipad">
+  <h2><span class="num">11.</span>Patient iPad — End-to-End Day</h2>
+  <div class="actors"><span class="chip ipad">Patient (iPad)</span></div>
+  <div class="ref">Scope §4.5 · Status: most <span class="l-done">Done</span>; kiosk mode handled via Microsoft Intune.</div>
+  <div class="mermaid">
+flowchart TD
+  classDef ipad fill:#16382d,stroke:#7af0c0,color:#e9edff;
+  classDef sys fill:#3a2a14,stroke:#ffb86b,color:#e9edff;
+  classDef decision fill:#0d1430,stroke:#9aa3c7,color:#e9edff;
+
+  W[Wake iPad — Kiosk / single-app mode]:::sys --> Hm[Patient Home]:::ipad
+  Hm --> M1[Onboarding & education materials]:::ipad
+  Hm --> M2[Today's schedule\nvitals · meds · calls]:::ipad
+  Hm --> M3[Take vital reading\nauto-sync from device]:::ipad
+  Hm --> M4[Meds: see list + 'I have taken']:::ipad
+  Hm --> M5[Upcoming Teams call\njoin waiting room]:::ipad
+  Hm --> M6[View past readings\ngraph / list]:::ipad
+  Hm --> M7[Surveys: post-discharge,\npain, IO, pill count]:::ipad
+  Hm --> M8[Request ad-hoc teleconsult]:::ipad
+  M3 --> AB{Abnormal?}:::decision
+  AB -- Yes --> BL[Cannot dismiss\nuntil patient ACK or retake]:::ipad
+  </div>
+</section>
+
+<!-- =================== REPORTS =================== -->
+<section id="m-reports">
+  <h2><span class="num">12.</span>Reporting</h2>
+  <div class="actors"><span class="chip web">Clinician / Manager (Web)</span></div>
+  <div class="ref">
+    Scope §4.8 · Status: most <span class="l-todo">To do</span>; Excel/PDF export <span class="l-bug">UI Improve</span>.
+  </div>
+  <div class="mermaid">
+flowchart LR
+  classDef web fill:#1c2a55,stroke:#6aa8ff,color:#e9edff;
+  classDef sys fill:#3a2a14,stroke:#ffb86b,color:#e9edff;
+  classDef decision fill:#0d1430,stroke:#9aa3c7,color:#e9edff;
+
+  M[Manager → Reports]:::web --> P[Pick report]:::web
+  P --> R1[Vital compliance]:::web
+  P --> R2[Teleconsult usage daily]:::web
+  P --> R3[Medication change log]:::web
+  P --> R4[Vital submissions daily]:::web
+  P --> R5[Post-discharge surveys]:::web
+  P --> R6[Normal/abnormal vitals]:::web
+  P --> R7[Home-visit details + counts]:::web
+  R1 --> F[Filter: date · institution ·\ncare team · patient]:::web
+  R2 --> F
+  R3 --> F
+  R4 --> F
+  R5 --> F
+  R6 --> F
+  R7 --> F
+  F --> EX{Export?}:::decision
+  EX -- Excel --> X[.xlsx download]:::sys
+  EX -- PDF --> Y[.pdf download]:::sys
+  EX -- View --> Z[Inline charts + table]:::web
+  </div>
+</section>
+
+<footer>
+  Built from <em>Part 3: Scope of Work and Requirements</em> + NHG To-Do List · Mermaid 10.9.1 · Click any “Deep dive” section header to expand sub-flows.
+</footer>
+
+</main>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      background:'#0d1430',
+      primaryColor:'#1c2a55',
+      primaryTextColor:'#e9edff',
+      lineColor:'#6aa8ff',
+      secondaryColor:'#16382d',
+      tertiaryColor:'#3a2a14',
+      fontSize:'13px'
+    },
+    flowchart:{ htmlLabels:true, curve:'basis', useMaxWidth:true }
+  });
+</script>
+</body>
+</html>
